@@ -1,0 +1,119 @@
+import pandas as pd
+import numpy as np
+import seaborn as sns
+from matplotlib import pyplot as plt
+
+df = pd.read_csv('diabetes.csv')
+df.sample(10)
+
+df.describe()
+
+df.Outcome.unique()
+
+print(df.isnull().sum())
+
+print("DataFrame Total Rows are : ", len(df))
+
+sns.boxenplot(df["Pregnancies"])
+
+df =df.drop([index for index,i in enumerate(df["Pregnancies"]) if i > 12])
+
+sns.boxenplot(df["Pregnancies"])
+
+print("DataFrame Total Rows are : ", len(df))
+
+sns.boxenplot(df["Insulin"])
+
+df = df.drop([index for index,i in enumerate(df["Insulin"]) if i > 500])
+
+sns.boxenplot(df["Insulin"])
+
+print("DataFrame Total Rows are : ", len(df))
+
+df = df.reset_index()
+
+one = 0 
+zero = 0
+for i in df.Outcome:
+    if i == 1 :
+        one = one +1 
+    else:
+        zero = zero +1
+
+zero , one
+
+zero_index = [index for index,i in enumerate(df.Outcome) if i == 0]
+
+import random
+choosen_index = random.sample(zero_index , zero - one )
+print("removing : ", len(choosen_index) , " rows")
+
+df = df.drop(choosen_index)
+
+one = 0 
+zero = 0
+for i in df.Outcome:
+    if i == 1 :
+        one = one +1 
+    else:
+        zero = zero +1
+zero , one
+
+df.describe()
+
+X = df.drop(["Outcome"] , axis =1)
+y = df["Outcome"]
+
+
+from sklearn.model_selection import train_test_split
+X_train , X_test , y_train , y_test = train_test_split(X , y , test_size = 0.2 , random_state = 42)
+
+print(f" X_train shape = {X_train.shape}")
+print(f" X_test shape = {X_test.shape}")
+
+from sklearn.preprocessing import StandardScaler
+
+
+
+scaler = StandardScaler() 
+scaler.fit(X_train)
+scaler.transform(X_train)
+scaler.transform(X_test)
+
+from sklearn.neighbors import KNeighborsClassifier
+max_score = 0
+n = 0
+for i in range(1,50):
+    knn = KNeighborsClassifier(n_neighbors=i)
+    knn.fit(X_train, y_train)
+    print(f"For i = {i} " , end=" ")
+    print(round(knn.score(X_test, y_test)*100 , 3) , "%")
+    if max_score < knn.score(X_test, y_test):
+        n = i
+
+knn = KNeighborsClassifier(n_neighbors=15)
+knn.fit(X_train, y_train)
+print(round(knn.score(X_test, y_test)*100 , 3) , "%")
+
+y_pred = knn.predict(X_test)
+
+import matplotlib.pyplot as plt
+from sklearn.metrics import plot_confusion_matrix
+color = 'white'
+matrix = plot_confusion_matrix(knn, X_test, y_test, cmap=plt.cm.Blues)
+matrix.ax_.set_title('Confusion Matrix', color=color)
+plt.xlabel('Predicted Label', color=color)
+plt.ylabel('True Label', color=color)
+plt.gcf().axes[0].tick_params(colors=color)
+plt.gcf().axes[1].tick_params(colors=color)
+plt.show()
+
+from sklearn.metrics import zero_one_loss
+error_rate = zero_one_loss(y_test, y_pred)
+error_rate
+
+from sklearn.metrics import recall_score
+print("Recall : " , (recall_score(y_test, y_pred, average='binary'))*100 )
+
+from sklearn.metrics import precision_score
+print("precision_score : " , (precision_score(y_test, y_pred, average='binary'))*100 )

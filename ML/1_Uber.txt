@@ -1,0 +1,113 @@
+import pandas as pd
+import numpy as np
+import seaborn as sns
+
+df = pd.read_csv("uber.csv")
+
+df.head()
+
+df.columns
+
+df.info() 
+
+df =df.drop(['Unnamed: 0', 'key',  'pickup_datetime',] , axis=1)
+
+df.info() 
+
+df.sample(5)
+
+print("Checking null values")
+print("getting only those column having atleast one null value")
+for col in df.columns:
+    if df[col].isnull().sum() > 0:
+        print(f'column_name = {col} , Total_null_values = ',df[col].isnull().sum())
+
+index_no = []
+col = "dropoff_longitude" 
+for i,j in enumerate(df[col].isnull()):
+    if(j==True):
+        index_no.append(i)
+for i in index_no:
+    df.drop(i , axis =0 , inplace = True)
+
+for col in df.columns:
+    if df[col].isnull().sum() > 0:
+        print(f'column_name = {col} , Total_null_values = ',df[col].isnull().sum())
+
+df.duplicated().sum()
+
+df.drop_duplicates(inplace=True)
+
+df.duplicated().sum()
+
+df.columns
+
+col = "fare_amount"
+sns.boxplot(df[col])
+
+sns.heatmap(df.corr() , annot=True, cmap='viridis').set_title("Heatmap For Correlation") 
+
+df.drop(["fare_amount" ] , inplace= True , axis=1)
+
+df.head()
+
+sns.heatmap(df.corr() , annot=True, cmap='viridis').set_title("Heatmap For Correlation") 
+
+feature = ['pickup_longitude', 'pickup_latitude', 'dropoff_longitude',
+       'dropoff_latitude']
+
+col = feature[0]
+sns.violinplot( data=df[col],palette='rainbow').set_title(f"{col}")
+
+col = feature[1]
+sns.violinplot( data=df[col],palette='rainbow').set_title(f"{col}")
+
+col = feature[1]
+sns.boxplot( data=df[col],palette='rainbow').set_title(f"{col}")
+
+col = feature[2]
+sns.violinplot( data=df[col],palette='rainbow').set_title(f"{col}")
+
+col = feature[3]
+sns.violinplot( data=df[col],palette='rainbow').set_title(f"{col}")
+
+max_value = 250
+col = feature[1]
+maxi = np.where(df[col] > max_value )
+maxi =list(maxi[0])
+print("total outliers present : ",len(maxi))
+
+df.drop(maxi, axis =0 , inplace = True) 
+
+df.head()
+
+target_col_name = "passenger_count"
+X = df.drop(target_col_name,axis=1)
+y= df[target_col_name]
+
+from sklearn.model_selection import train_test_split
+X_train , X_test , y_train , y_test = train_test_split(X , y , test_size = 0.2 , random_state = 42)
+print(f" X_train shape = {X_train.shape}")
+print(f" X_test shape = {X_test.shape}")
+
+from sklearn.preprocessing import StandardScaler
+sc= StandardScaler()
+sc.fit_transform(X_train)
+
+from sklearn.linear_model import LinearRegression
+lr = LinearRegression()
+
+lr.fit(X_train , y_train)
+
+X_test =sc.transform(X_test)
+
+lr.score(X_test,y_test)
+
+from sklearn.ensemble import RandomForestRegressor
+rf = RandomForestRegressor()
+
+rf.fit(X_train , y_train)
+
+rf.score(X_test,y_test)
+
+
